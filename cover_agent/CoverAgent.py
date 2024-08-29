@@ -30,6 +30,7 @@ class CoverAgent:
             llm_model=args.model,
             api_base=args.api_base,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
+            hf_model_name = args.hf_model_name
         )
 
     def _validate_paths(self):

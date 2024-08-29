@@ -30,6 +30,7 @@ class UnitTestGenerator:
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
+        hf_model_name: str = ""
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -49,6 +50,7 @@ class UnitTestGenerator:
             use_report_coverage_feature_flag (bool, optional): Setting this to True considers the coverage of all the files in the coverage report. 
                                                                This means we consider a test as good if it increases coverage for a different 
                                                                file other than the source file. Defaults to False.
+            hf_model_name: Setting to get Hugging face chat template for litellm
 
         Returns:
             None
@@ -66,9 +68,10 @@ class UnitTestGenerator:
         self.language = self.get_code_language(source_file_path)
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.last_coverage_percentages = {}
+        self.hf_model_name = hf_model_name
 
         # Objects to instantiate
-        self.ai_caller = AICaller(model=llm_model, api_base=api_base)
+        self.ai_caller = AICaller(model=llm_model, api_base=api_base, hf_model_name=self.hf_model_name)
 
         # Get the logger instance from CustomLogger
         self.logger = CustomLogger.get_logger(__name__)
@@ -140,6 +143,7 @@ class UnitTestGenerator:
         ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
 
         # Instantiate CoverageProcessor and process the coverage report
+        print("DONGXQ self.code_coverage_report_path: ", self.code_coverage_report_path)
         coverage_processor = CoverageProcessor(
             file_path=self.code_coverage_report_path,
             src_file_path=self.source_file_path,
@@ -306,6 +310,7 @@ class UnitTestGenerator:
         """
         try:
             test_headers_indentation = None
+            # test_headers_indentation = 0
             allowed_attempts = 3
             counter_attempts = 0
             while (
@@ -317,12 +322,20 @@ class UnitTestGenerator:
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_headers_indentation)
                 )
+                '''
+                response = """language: python
+testing_framework: pytest
+number_of_tests: 1
+test_headers_indentation: 0
+                """
+'''
                 self.total_input_token_count += prompt_token_count
                 self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
                 test_headers_indentation = tests_dict.get(
                     "test_headers_indentation", None
                 )
+                # test_headers_indentation = 0
                 counter_attempts += 1
 
             if test_headers_indentation is None:
@@ -358,7 +371,8 @@ class UnitTestGenerator:
                     "Failed to analyze the relevant line number to insert new tests"
                 )
 
-            self.test_headers_indentation = test_headers_indentation
+            # self.test_headers_indentation = test_headers_indentation
+            self.test_headers_indentation = 0 
             self.relevant_line_number_to_insert_tests_after = (
                 relevant_line_number_to_insert_tests_after
             )

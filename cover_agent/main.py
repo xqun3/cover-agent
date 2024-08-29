@@ -96,6 +96,12 @@ def parse_args():
         action="store_true",
         help="Setting this to True considers the coverage of all the files in the coverage report. This means we consider a test as good if it increases coverage for a different file other than the source file. Default: False.",
     )
+    parser.add_argument(
+        "--hf_model_name",
+        type=str,
+        default="",
+        help="Get chat template from hf_madel_name"
+    )
     return parser.parse_args()
 
 

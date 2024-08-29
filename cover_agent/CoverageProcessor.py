@@ -119,6 +119,7 @@ class CoverageProcessor:
         """
         tree = ET.parse(self.file_path)
         root = tree.getroot()
+        print("DONGXQ in parse_coverage_report_cobertura:", self.file_path)
 
         if filename:
             for cls in root.findall(".//class"):
@@ -165,6 +166,7 @@ class CoverageProcessor:
 
         lines_covered, lines_missed = [], []
         filename = os.path.basename(self.src_file_path)
+        print("DONGXQ in parse_coverage_report_lcov:", self.src_file_path)
         try: 
             with open(self.file_path, "r") as file:
                 for line in file:
